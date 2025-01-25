@@ -79,7 +79,7 @@
     </div>
 
     <script>
-        const socket = io('https://voicenow.ddns.net:5000/', { transports: ['websocket'] });
+        const socket = io('http://13.60.247.59:5000/', { transports: ['websocket'] });
 
         const usersList = document.getElementById('usersList');
         const localVideo = document.getElementById('localVideo');
@@ -94,11 +94,47 @@
         };
 
         // Get local media
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then((stream) => {
+          async function startLocalVideo() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length <= 1) {
+                    console.warn("Only one camera found or no cameras found. Using default camera.");
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    localStream = stream;
+                    localVideo.srcObject = stream;
+                    return;
+                }
+
+                // Attempt to use camera at index 1
+                const cameraDeviceId = videoDevices[1].deviceId;
+                const constraints = {
+                    video: { deviceId: { exact: cameraDeviceId } },
+                    audio: true
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 localStream = stream;
                 localVideo.srcObject = stream;
-            });
+
+
+            } catch (error) {
+                console.error('Error accessing media devices:', error);
+                 // Fallback to default camera if specific camera fails
+                try {
+                  console.warn("Falling back to default camera")
+                  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                  localStream = stream;
+                  localVideo.srcObject = stream;
+                } catch(defaultError) {
+                  console.error('Error accessing default camera:', defaultError)
+                }
+            }
+        }
+
+        startLocalVideo();
+
 
         // Update user list
         socket.on('update_users', (users) => {
@@ -117,9 +153,9 @@
         });
 
         // Handle incoming call
-        socket.on('incoming_call', ({ from }) => {
+         socket.on('incoming_call', ({ from }) => {
             currentCaller = from;
-            if (confirm(`Accept call from ${from}?`)) {
+             if (confirm(`Accept call from ${from}?`)) {
                 acceptCall(from);
             } else {
                 socket.emit('call_rejected', { to: from });
@@ -134,16 +170,16 @@
         // Handle offer
         socket.on('offer', async ({ offer, from }) => {
             peerConnection = createPeerConnection(from);
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            socket.emit('answer', { to: from, answer });
+             await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+             const answer = await peerConnection.createAnswer();
+             await peerConnection.setLocalDescription(answer);
+             socket.emit('answer', { to: from, answer });
         });
 
         // Handle answer
         socket.on('answer', async ({ answer }) => {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        });
+         });
 
         // Handle ICE candidates
         socket.on('candidate', ({ candidate }) => {
@@ -165,17 +201,24 @@
         }
 
         function initiateCall(sid) {
-            peerConnection = createPeerConnection(sid);
-            peerConnection.addStream(localStream);
-            peerConnection.createOffer()
-                .then((offer) => peerConnection.setLocalDescription(offer))
-                .then(() => socket.emit('offer', { to: sid, offer: peerConnection.localDescription }));
+           peerConnection = createPeerConnection(sid);
+           peerConnection.addStream(localStream);
+           peerConnection.createOffer()
+              .then((offer) => peerConnection.setLocalDescription(offer))
+             .then(() => {
+                 socket.emit('initiate_call', { to: sid });
+                  socket.emit('offer', { to: sid, offer: peerConnection.localDescription });
+            });
         }
 
+
         function acceptCall(from) {
-            peerConnection = createPeerConnection(from);
-            peerConnection.addStream(localStream);
-            socket.emit('accept_call', { to: from });
+             peerConnection = createPeerConnection(from);
+              peerConnection.addStream(localStream);
+             peerConnection.createAnswer()
+              .then((answer) => peerConnection.setLocalDescription(answer))
+               .then(() => socket.emit('answer', { to: from, answer: peerConnection.localDescription }));
+
         }
     </script>
 </body>
