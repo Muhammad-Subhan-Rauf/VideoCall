@@ -79,7 +79,7 @@
     </div>
 
     <script>
-        const socket = io('https://voicenow.ddns.net:5000/', { transports: ['websocket'] });
+        const socket = io('https://voicenow.ddns.net', { transports: ['websocket'] });
 
         const usersList = document.getElementById('usersList');
         const localVideo = document.getElementById('localVideo');
@@ -92,6 +92,15 @@
         const configuration = {
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         };
+        fetch('https://voicenow.ddns.net/test', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        })
+        .then((response) => response.json())
+        .then((data) => console.log('Data:', data))
+        .catch((error) => console.error('Error:', error));
 
         // Get local media
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
