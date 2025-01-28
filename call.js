@@ -1,5 +1,11 @@
-const socket = io('http://localhost:5000', { transports: ['websocket'] });
-let api_url = "http://localhost:5000";
+// const socket = io('http://localhost:5000', { transports: ['websocket'] });
+// let api_url = "http://localhost:5000";
+const socket = io('https://voicenow.ddns.net:5000', { transports: ['websocket'] });
+let api_url = "https://voicenow.ddns.net:5000";
+
+
+
+
 const usersList = document.getElementById('usersList');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');

@@ -1,4 +1,5 @@
-const base_url = "http://localhost:5000/";
+const base_url = "https://voicenow.ddns.net:5000/";
+// const base_url = "http://localhost:5000/";
 
 // Login function
 function authenticate() {
