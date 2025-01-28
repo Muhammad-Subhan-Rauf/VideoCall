@@ -29,7 +29,7 @@ function authenticate() {
                 localStorage.setItem("userData", JSON.stringify(result.body));
                 console.log("User data stored in local storage:", result.body);
                 // Navigate to a different page within the same website
-                window.location.href = "/index.html";
+                window.location.href = "/call.html";
 
             } else {
                 console.log(result.body)
