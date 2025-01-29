@@ -13,7 +13,7 @@ body {
     position: relative;
     width: 80%;
     max-width: 800px;
-    aspect-ratio: 16/9;
+    aspect-ratio: 9/16;
     background-color: black;
     overflow: hidden;
     border-radius: 10px;
