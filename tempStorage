@@ -17,31 +17,22 @@ const languages = {
 };
 
 const container = document.getElementById('languages');
+
 Object.values(languages).forEach(lang => {
     const box = document.createElement('div');
-    box.id = lang;
+    box.id = lang
     box.classList.add('language-box');
     box.textContent = lang;
-    box.onclick = () => {
-        const langCode = languageCodeMap[lang];
-        filterUsersByLanguage(langCode);
-    };
+    box.onclick = () => alert(`You clicked on ${lang}`);
     container.appendChild(box);
 });
 
-
-
-const languageCodeMap = {};
-Object.entries(languages).forEach(([code, name]) => {
-    languageCodeMap[name] = code;
-});
 
 
 const usersList = document.getElementById('usersList');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const videoContainer = document.getElementById('videoContainer');
-const cameraSelect = document.getElementById('cameraSelect');
 
 
 // localVideo.style.display = 'none';
@@ -54,8 +45,7 @@ let currentCallSid = null;
 let endCallButton = null;
 let makingOffer = false;
 let ignoreOffer = false;
-let current_user = null;
-let allUsers = {};
+
 const configuration = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 };
@@ -63,61 +53,21 @@ const configuration = {
 
 function getUserData() {
     const userDataString = localStorage.getItem("userData");
+    
     if (userDataString) {
         try {
-            return JSON.parse(userDataString);
+            const userData = JSON.parse(userDataString); // Convert string to dictionary
+            return userData;
         } catch (error) {
-            console.error("Failed to parse user data:", error);
+            console.error("Failed to parse user data from local storage:", error);
             return null;
         }
+    } else {
+        console.warn("No user data found in local storage.");
+        return null;
     }
-    console.warn("No user data found");
-    return null;
-}
-current_user = getUserData().username;
-function isLoggedIn()
-{
-    let user = getUserData()
-    if (user){
-        return true
-    }
-    return false
 }
 
-if (!isLoggedIn())
-{
-    window.location.href = "/index.html";
-}
-
-function filterUsersByLanguage(languageCode) {
-    usersList.innerHTML = '';
-    usersList.style.display = 'block';
-
-    const filteredUsers = Object.entries(allUsers).filter(([sid, user]) => {
-        return user.languages.includes(languageCode) && sid !== socket.id;
-    });
-
-    if (filteredUsers.length === 0) {
-        const noUsers = document.createElement('li');
-        noUsers.textContent = 'No users available';
-        usersList.appendChild(noUsers);
-        return;
-    }
-
-    filteredUsers.forEach(([sid, user]) => {
-        const listItem = document.createElement('li');
-        listItem.textContent = user.id;
-        if (!user.InCall) {
-            const callButton = document.createElement('button');
-            callButton.textContent = 'Call';
-            callButton.onclick = () => initiateCall(sid);
-            listItem.appendChild(callButton);
-        }
-        usersList.appendChild(listItem);
-        listItem.style.animation = 'slideIn 0.3s ease forwards';
-
-    });
-}
 
 
 // Initialize the end call button
@@ -136,11 +86,6 @@ function createEndCallButton() {
     endCallButton.style.border = 'none';
     endCallButton.style.borderRadius = '5px';
     endCallButton.style.cursor = 'pointer';
-
-    endCallButton.style.background = 'linear-gradient(45deg, #ff4444, #cc0000)';
-    endCallButton.style.boxShadow = '0 8px 25px rgba(255, 68, 68, 0.3)';
-
-
     endCallButton.onclick = endCall;
     document.body.appendChild(endCallButton);
 }
@@ -150,6 +95,8 @@ function initializeMediaDevices() {
     navigator.mediaDevices.enumerateDevices()
         .then((devices) => {
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            const cameraSelect = document.createElement('select');
+            cameraSelect.id = 'cameraSelect';
 
             videoDevices.forEach((device, index) => {
                 const option = document.createElement('option');
@@ -157,25 +104,24 @@ function initializeMediaDevices() {
                 option.textContent = device.label || `Camera ${index + 1}`;
                 cameraSelect.appendChild(option);
             });
-            if (videoDevices.length > 0) {
-                cameraSelect.style.display = 'block'
-                cameraSelect.addEventListener('change', () => {
-                    const selectedDeviceId = cameraSelect.value;
-                    navigator.mediaDevices.getUserMedia({
-                        video: { deviceId: selectedDeviceId },
-                        audio: true
-                    }).then((stream) => {
-                        if (localStream) {
-                            localStream.getTracks().forEach(track => track.stop());
-                        }
-                        localStream = stream;
-                        localVideo.srcObject = stream;
-                    }).catch(console.error);
-                });
 
-                cameraSelect.dispatchEvent(new Event('change'));
-            }
+            document.body.appendChild(cameraSelect);
 
+            cameraSelect.addEventListener('change', () => {
+                const selectedDeviceId = cameraSelect.value;
+                navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: selectedDeviceId },
+                    audio: true
+                }).then((stream) => {
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    localStream = stream;
+                    localVideo.srcObject = stream;
+                }).catch(console.error);
+            });
+
+            cameraSelect.dispatchEvent(new Event('change'));
         })
         .catch(console.error);
 }
@@ -193,8 +139,6 @@ function createPeerConnection(targetSid) {
     pc.ontrack = (event) => {
         if (!remoteVideo.srcObject) {
             remoteVideo.srcObject = event.streams[0];
-            remoteVideo.style.display = 'block';
-            remoteVideo.style.animation = 'fadeIn 0.5s ease';
         }
     };
 
@@ -223,6 +167,7 @@ function createPeerConnection(targetSid) {
 
 // Call Management
 function initiateCall(targetSid) {
+
     if (peerConnection) {
         console.warn('A call is already in progress.');
         return;
@@ -231,12 +176,10 @@ function initiateCall(targetSid) {
     currentCallSid = targetSid;
     peerConnection = createPeerConnection(targetSid);
     socket.emit('call_request', { to: targetSid });
-    endCallButton.style.display = 'block';
+    endCallButton.style.display = 'block'; // Show end call button for the caller
     localVideo.style.display = 'block';
-    localVideo.style.animation = 'fadeIn 0.5s ease';
-    videoContainer.classList.add('active');
-
-    videoContainer.style.animation = 'fadeIn 0.5s ease';
+    remoteVideo.style.display = 'block';
+    videoContainer.style.display = 'block';
 }
 
 function acceptCall(targetSid) {
@@ -248,23 +191,17 @@ function acceptCall(targetSid) {
     currentCallSid = targetSid;
     peerConnection = createPeerConnection(targetSid);
     socket.emit('accept_call', { to: targetSid });
-    endCallButton.style.display = 'block';
+    endCallButton.style.display = 'block'; // Show end call button for the recipient
     localVideo.style.display = 'block';
-    localVideo.style.animation = 'fadeIn 0.5s ease';
-    videoContainer.classList.add('active');
-
-    videoContainer.style.animation = 'fadeIn 0.5s ease';
+    remoteVideo.style.display = 'block';
+    videoContainer.style.display = 'block';
 }
 
 function endCall() {
     if (currentCallSid) {
-        console.log("No error 1")
         socket.emit('end_call', { to: currentCallSid });
-        console.log("No error 2")
         cleanupCall();
-        console.log("No error 3")
-        socket.emit("refresh_list", { id: current_user })
-        console.log("No error 4")
+        socket.emit("refresh_list", {id:user.id})
     }
 }
 
@@ -277,11 +214,11 @@ function cleanupCall() {
     if (remoteVideo.srcObject) {
         remoteVideo.srcObject.getTracks().forEach(track => track.stop());
         remoteVideo.srcObject = null;
-        remoteVideo.style.display = 'none';
     }
-    localVideo.style.display = 'none';
     endCallButton.style.display = 'none';
-    videoContainer.classList.remove('active');
+    localVideo.style.display = 'none';
+    remoteVideo.style.display = 'none';
+    videoContainer.style.display = 'none';
 
     currentCallSid = null;
 }
@@ -292,38 +229,33 @@ socket.on("connected", (users) => {
 
     data = getUserData()
 
-    socket.emit('id_send', { user: data })
+    socket.emit('id_send', {user:data})
 })
 
 socket.on('update_users', (users) => {
-    allUsers = users;
     usersList.innerHTML = '';
+    console.log(users)
     for (let [sid, user] of Object.entries(users)) {
         if (sid !== socket.id) {
+            console.log(user.languages)
             const listItem = document.createElement('li');
             listItem.textContent = user.id;
-            if (!user.InCall) {
-                const callButton = document.createElement('button');
-                callButton.textContent = 'Call';
-                callButton.onclick = () => initiateCall(sid);
-                listItem.appendChild(callButton);
-            }
+            const callButton = document.createElement('button');
+            callButton.textContent = 'Call';
+            callButton.onclick = () => initiateCall(sid);
+            listItem.appendChild(callButton);
             usersList.appendChild(listItem);
-            listItem.style.animation = 'slideIn 0.3s ease forwards';
         }
     }
 });
 
 socket.on('call_received', (data) => {
     currentCallSid = data.sid;
-    console.log(currentCallSid)
     const userResponse = confirm(`Accept call from ${data.from}?`);
     if (userResponse) {
         acceptCall(currentCallSid);
     } else {
         socket.emit('reject_call', { to: currentCallSid });
-        location.reload()
-        cleanupCall();
     }
 });
 
@@ -374,13 +306,11 @@ socket.on('call_ended', () => {
 });
 
 socket.on('call_failed', (data) => {
-    location.reload()
     alert(data.message);
     cleanupCall();
 });
 
 socket.on('call_rejected', () => {
-    location.reload()
     alert('Call was rejected');
     cleanupCall();
 });

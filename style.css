@@ -1,60 +1,187 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #f4f4f4;
 }
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 1s ease-in;
+}
+
 #videoContainer {
     position: relative;
-    width: 80%;
-    max-width: 800px;
-    aspect-ratio: 9/16;
-    background-color: black;
+    width: 90%;
+    max-width: 1000px;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 15px;
     overflow: hidden;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
 }
+
+#videoContainer.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 #remoteVideo {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: opacity 0.3s ease;
 }
+
 #localVideo {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    width: 150px;
-    height: 100px;
-    border-radius: 5px;
-    border: 2px solid white;
-    object-fit: cover;
-    z-index: 10;
-    background-color: black;
+    bottom: 20px;
+    right: 20px;
+    width: 180px;
+    height: 120px;
+    border-radius: 8px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
+
+#localVideo:hover {
+    transform: scale(1.05);
+}
+
 #usersList {
-    margin: 20px;
-    list-style-type: none;
+    list-style: none;
     padding: 0;
+    margin: 20px 0;
+    width: 90%;
+    max-width: 600px;
 }
+
 #usersList li {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin: 5px 0;
+    animation: slideIn 0.4s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-20px);
 }
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 #usersList button {
-    margin-left: 10px;
-    padding: 5px 10px;
-    background-color: #4CAF50;
-    color: white;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
     border: none;
-    border-radius: 5px;
+    padding: 8px 20px;
+    border-radius: 25px;
+    color: white;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
 #usersList button:hover {
-    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.languages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    width: 90%;
+    max-width: 800px;
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+}
+
+.language-box {
+    padding: 15px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.language-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.language-box:active {
+    transform: translateY(0);
+}
+
+#endCallButton {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 35px;
+    background: linear-gradient(45deg, #ff4444, #cc0000);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 68, 68, 0.3);
+    transition: all 0.3s ease;
+    animation: pulse 1.5s infinite;
+}
+
+#endCallButton:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 68, 68, 0.4);
+}
+
+@keyframes pulse {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#cameraSelect {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    backdrop-filter: blur(5px);
+}
+
+#cameraSelect option {
+    background: #333;
 }
