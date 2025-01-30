@@ -201,3 +201,77 @@ function animateElements() {
     }, 500);
 
 }
+
+
+
+
+let current_state = "login"
+
+const loginForm = document.getElementById('signup');
+loginForm.style.display = "none"
+// Update the toggle functionality
+document.getElementById('toggle').addEventListener('change', function() {
+    const loginForm = document.getElementById('login');
+    const createForm = document.getElementById('signup');
+    const showCreate = this.checked;
+    
+    loginForm.style.display = showCreate ? 'none' : 'block';
+    createForm.style.display = showCreate ? 'block' : 'none';
+    
+    // Re-trigger animations for the visible form
+    animateElements(showCreate ? '#createForm' : '#loginForm');
+});
+
+// Modify animateElements to handle either form
+function animateElements(selector) {
+    const form = document.querySelector(selector);
+    if (!form) return;
+
+    const inputGroups = form.querySelectorAll('.input-group');
+    const button = form.querySelector('button');
+    const title = form.querySelector('h1');
+
+    // Reset animations
+    title.style.opacity = 0;
+    title.style.transform = 'translateY(-10px)';
+    
+    inputGroups.forEach((input, i) => {
+        input.style.opacity = 0;
+        input.style.transform = 'translateY(-10px)';
+    });
+
+    if (button) {
+        button.style.opacity = 0;
+        button.style.transform = 'translateY(10px)';
+    }
+    console.log(current_state)
+    if (current_state == "login")
+    {
+        current_state = "signup"
+    }
+    else{
+        current_state = "login"
+    }
+    // Animate elements
+    setTimeout(() => {
+        title.style.transition = 'all 0.6s ease';
+        title.style.opacity = 1;
+        title.style.transform = 'translateY(0)';
+
+        inputGroups.forEach((input, i) => {
+            setTimeout(() => {
+                input.style.transition = 'all 0.4s ease';
+                input.style.opacity = 1;
+                input.style.transform = 'translateY(0)';
+            }, 100 * i);
+        });
+
+        if (button) {
+            setTimeout(() => {
+                button.style.transition = 'all 0.4s ease';
+                button.style.opacity = 1;
+                button.style.transform = 'translateY(0)';
+            }, 100 * inputGroups.length);
+        }
+    }, 100);
+}

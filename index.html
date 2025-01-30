@@ -6,12 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login / Create Account</title>
     <link rel="stylesheet" href="login.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
     <div class="container">
-        <div class="form-wrapper">
+        <div class="iphone-toggle-container">
+            <div class="iphone-toggle">
+                <input type="checkbox" id="toggle">
+                <label for="toggle" class="toggle-label">
+                    <span class="toggle-thumb"></span>
+                    <span class="login-text">Login</span>
+                    <span class="create-text">Create</span>
+                </label>
+            </div>
+        </div>
+        <div class="form-wrapper" id="login">
             <div class="form-header">
                 <h1 class="login-title">Login</h1>
             </div>
@@ -26,19 +38,19 @@
             <button onclick="authenticate()">Login</button>
             <p id="login-message" class="message"></p>
         </div>
-        <hr>
-        <div class="form-wrapper">
+ 
+        <div class="form-wrapper" id="signup">
             <div class="form-header">
                 <h1 class="create-title">Create Account</h1>
             </div>
-                <div class="input-group">
-                  <i class="fas fa-user-plus"></i>
-                  <input type="text" placeholder="Username" id="create-username">
-                </div>
-                <div class="input-group">
-                  <i class="fas fa-key"></i>
-                  <input type="password" placeholder="Password" id="create-password">
-                </div>
+            <div class="input-group">
+                <i class="fas fa-user-plus"></i>
+                <input type="text" placeholder="Username" id="create-username">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-key"></i>
+                <input type="password" placeholder="Password" id="create-password">
+            </div>
             <div class="input-group">
                 <i class="fas fa-signature"></i>
                 <input type="text" placeholder="Name" id="create-name">
@@ -53,6 +65,7 @@
         </div>
     </div>
     <script src="login.js"></script>
+    
 </body>
 
 </html>

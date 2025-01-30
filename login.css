@@ -58,40 +58,44 @@ input::placeholder{
     color: #ccc;
 }
 
+/* Define animatable CSS properties for gradient colors */
+@property --color1 {
+  syntax: '<color>';
+  initial-value: #007bff;
+  inherits: false;
+}
+
+@property --color2 {
+  syntax: '<color>';
+  initial-value: #0056b3;
+  inherits: false;
+}
+
 button {
-    position: relative;
     width: 100%;
     padding: 12px;
+    background: linear-gradient(45deg, var(--color1), var(--color2));
     color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: --color1 1s ease, --color2 1s ease, transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     margin: 10px 0;
-    background: none;
-}
-
-button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    transition: opacity 1s ease;
-    z-index: -1;
-    border-radius: 8px;
-}
-
-button:hover::before {
-    background: linear-gradient(45deg, #0056b3, #007bff);
+    
+    /* Initial values for gradient */
+    --color1: #007bff;
+    --color2: #0056b3;
 }
 
 button:hover {
+    --color1: #0056b3;
+    --color2: #007bff;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
+
 
 p.message {
     font-size: 14px;
@@ -133,4 +137,100 @@ hr {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* Remove old toggle button styles and add these */
+.iphone-toggle-container {
+    cursor: pointer;
+    margin-bottom: 30px;
+    position: relative;
+    width: 220px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.iphone-toggle {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+}
+
+.iphone-toggle input[type="checkbox"] {
+    cursor: pointer;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.toggle-label {
+    cursor: pointer;
+    display: block;
+    position: relative;
+    background: #e9e9eb;
+    height: 40px;
+    width: 220px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 108px;
+    height: 36px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.login-text, .create-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: color 0.3s ease;
+    z-index: 1;
+}
+
+.login-text {
+    left: 30px;
+}
+
+.create-text {
+    right: 30px;
+}
+
+/* Checked state */
+input:checked + .toggle-label {
+    background: #764ba2;
+}
+
+input:checked + .toggle-label .toggle-thumb {
+    transform: translateX(108px);
+    background: #fff;
+}
+
+input:checked + .toggle-label .login-text {
+    color: rgba(255, 255, 255, 0.87);
+}
+
+input:checked + .toggle-label .create-text {
+    color: #fff;
+}
+
+input:not(:checked) + .toggle-label .login-text {
+    color: #000;
+}
+
+input:not(:checked) + .toggle-label .create-text {
+    color: rgba(0,0,0,0.5);
 }
