@@ -1,5 +1,5 @@
-const base_url = "http://localhost:5000/";
-// const base_url = "https://voicenow.ddns.net:5000/";
+// const base_url = "http://localhost:5000/";
+const base_url = "https://voicenow.ddns.net:5000/";
 // Initialize language selection
 document.addEventListener('DOMContentLoaded', () => {
     createLanguageDropdown();
