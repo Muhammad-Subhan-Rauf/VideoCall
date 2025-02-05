@@ -16,6 +16,19 @@ const languages = {
     asl: 'American Sign Language'
 };
 
+const languageCountryMap = {
+    en: 'gb', // English - United Kingdom (UK flag)
+    es: 'es', // Spanish - Spain
+    fr: 'fr', // French - France
+    de: 'de', // German - Germany
+    zh: 'cn', // Chinese - China
+    ja: 'jp', // Japanese - Japan
+    ar: 'ae', // Arabic - United Arab Emirates
+    hi: 'in', // Hindi - India
+    asl: null // American Sign Language - No country flag, will use emoji
+};
+
+
 const languageCodeMap = {};
 Object.entries(languages).forEach(([code, name]) => {
     languageCodeMap[name] = code;
@@ -183,11 +196,44 @@ function displayUsers(filteredUsers) {
         const userIdSpan = document.createElement('span');
         userIdSpan.textContent = user.id;
 
+        // Add language flags/emojis
+        const flagsContainer = document.createElement('div');
+        flagsContainer.style.display = 'flex';
+        flagsContainer.style.gap = '5px'; // Adjust gap as needed
+        user.languages.forEach(langCode => {
+            if (langCode === 'asl') {
+                // Display hand emoji for ASL
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = '👋'; // Hand wave emoji (you can choose a different hand emoji)
+                emojiSpan.style.fontSize = '20px'; // Adjust emoji size if needed
+                emojiSpan.setAttribute('aria-label', languages[langCode]); // Accessibility label
+                flagsContainer.appendChild(emojiSpan);
+
+            } else {
+                const countryCode = languageCountryMap[langCode];
+                if (countryCode) {
+                    const flagImg = document.createElement('img');
+                    const flagBaseSize = '256x192'; // Base size for flag images
+                    flagImg.src = `https://flagcdn.com/${flagBaseSize}/${countryCode}.png`;
+                    // flagImg.srcset = `https://flagcdn.com/32x24/${countryCode}.png 2x,
+                    //                    https://flagcdn.com/48x36/${countryCode}.png 3x`;
+                    flagImg.width = 16; // Base width
+                    flagImg.height = 12; // Base height
+                    flagImg.alt = languages[langCode]; // Alt text for accessibility
+                    flagImg.style.width = '25px'; // Adjust flag display size in CSS if needed (overrides width attribute for display)
+                    flagImg.style.height = 'auto';
+                    flagsContainer.appendChild(flagImg);
+                }
+            }
+        });
+
+
         const userSpecs = document.createElement('span');
         userSpecs.textContent = user.specs;
         userSpecs.style.color = '#6fd4e5';
 
         listItem.appendChild(userIdSpan);
+        listItem.appendChild(flagsContainer); // Add flags/emojis container here
         listItem.appendChild(userSpecs);
 
 
