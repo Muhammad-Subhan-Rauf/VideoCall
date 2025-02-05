@@ -3,26 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Call with Accept Feature</title>
+    <title>Translify</title>
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="call_style.css"> <!-- Link to your CSS file -->
 </head>
 <body>
-    <h1>Video Call App</h1>
+    <h1>Translify</h1>
+      <button id="logoutButton">Logout</button>
     <h2>Online Users:</h2>
+
+    <div>
+        <label for="specSelect">Filter by Specialization:</label>
+        <select id="specSelect">
+            <option value="">All Specializations</option>
+            <!-- Options will be populated by JavaScript -->
+        </select>
+    </div>
+
+    <div class="languages" id="languages">
+        <input type="text" id="userSearchInput" placeholder="Search by Language or User ID" class="language-search-input">
+    </div>
+
+    <!-- Optional Language Dropdown - Keep if you want dropdown language filter alongside search box -->
+    <!-- <div>
+        <label for="languageSelect">Filter by Language (Dropdown):</label>
+        <select id="languageSelect">
+            <option value="">All Languages</option>
+        </select>
+    </div> -->
+
+
     <ul id="usersList"></ul>
 
-    <div class="languages" id="languages"></div>
-    
+
     <div id="videoContainer">
         <video id="remoteVideo" playsinline autoplay></video>
         <video id="localVideo" playsinline autoplay muted></video>
     </div>
-    
+
      <select id="cameraSelect" style="display:none;"></select>
-    
+
     <script src="call.js"></script>
     <script src="call_style.js"></script>
-    <script id="messenger-widget-b" src="https://cdn.botpenguin.com/website-bot.js" defer>67961e1d55760cc2c153e644,67961ad3af2d20bfd35ac0ed</script>
+        <script id="messenger-widget-b" src="https://cdn.botpenguin.com/website-bot.js" defer>67961e1d55760cc2c153e644,67961ad3af2d20bfd35ac0ed</script>
+
 </body>
 </html>

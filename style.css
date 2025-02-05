@@ -21,7 +21,7 @@ h1 {
     position: relative;
     width: 90%;
     max-width: 1000px;
-    aspect-ratio: 16/9;
+
     background: #000;
     border-radius: 15px;
     overflow: hidden;
@@ -105,37 +105,33 @@ h1 {
 }
 
 .languages {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
+    display: flex; /* Changed to flex to accommodate input nicely */
+    align-items: center; /* Vertically align input in the center */
+    padding: 15px 20px; /* Adjust padding to match list items */
     width: 90%;
     max-width: 800px;
     margin: 20px 0;
-    padding: 20px;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     border-radius: 15px;
 }
 
-.language-box {
-    padding: 15px;
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    color: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    user-select: none;
+
+.language-search-input {
+    flex-grow: 1; /* Input takes up available space */
+    background: transparent; /* Transparent background to blend with languages container */
+    border: none; /* Remove default border */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5); /* Add a subtle bottom border */
+    color: white; /* White text color */
+    padding: 10px 15px; /* Padding for input */
+    font-size: 1rem; /* Adjust font size as needed */
+    outline: none; /* Remove focus outline */
 }
 
-.language-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+.language-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7); /* Lighter color for placeholder text */
 }
 
-.language-box:active {
-    transform: translateY(0);
-}
 
 #endCallButton {
     position: fixed;
@@ -184,4 +180,84 @@ h1 {
 
 #cameraSelect option {
     background: #333;
+}
+
+
+#logoutButton {
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #d32f2f, #b71c1c);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+}
+
+#logoutButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+/* Responsive Adjustments */
+
+@media (max-aspect-ratio: 1/1) {
+    #videoContainer {
+        aspect-ratio: 9/16; /* Make video container vertical */
+    }
+     #localVideo {
+        width: 120px;
+        height: 180px;
+        right: 10px;
+    }
+}
+
+
+/* Specialization Filter Styling */
+#specSelect {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 16px;
+    outline: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    animation: fadeIn 0.8s ease-out;
+}
+
+#specSelect:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+#specSelect:focus {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+#specSelect option {
+    padding: 8px;
+    background: #333;
+    color: white;
+}
+
+/* Label Styling */
+label[for="specSelect"] {
+    font-size: 1rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

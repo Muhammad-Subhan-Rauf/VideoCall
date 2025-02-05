@@ -1,7 +1,7 @@
-// const socket = io('http://localhost:5000', { transports: ['websocket'] });
-// let api_url = "http://localhost:5000";
-const socket = io('https://voicenow.ddns.net:5000', { transports: ['websocket'] });
-let api_url = "https://voicenow.ddns.net:5000";
+const socket = io('http://localhost:5000', { transports: ['websocket'] });
+let api_url = "http://localhost:5000";
+// const socket = io('https://voicenow.ddns.net:5000', { transports: ['websocket'] });
+// let api_url = "https://voicenow.ddns.net:5000";
 // 150
 
 const languages = {
@@ -16,32 +16,34 @@ const languages = {
     asl: 'American Sign Language'
 };
 
-const container = document.getElementById('languages');
-Object.values(languages).forEach(lang => {
-    const box = document.createElement('div');
-    box.id = lang;
-    box.classList.add('language-box');
-    box.textContent = lang;
-    box.onclick = () => {
-        const langCode = languageCodeMap[lang];
-        filterUsersByLanguage(langCode);
-    };
-    container.appendChild(box);
-});
-
-
-
 const languageCodeMap = {};
 Object.entries(languages).forEach(([code, name]) => {
     languageCodeMap[name] = code;
 });
-
 
 const usersList = document.getElementById('usersList');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const videoContainer = document.getElementById('videoContainer');
 const cameraSelect = document.getElementById('cameraSelect');
+const specSelect = document.getElementById('specSelect'); // Get spec dropdown
+const userSearchInput = document.getElementById('userSearchInput'); // Get search input
+const languageSelect = document.getElementById('languageSelect'); // Get language dropdown (keep if you want to keep language dropdown filter)
+const languagesContainer = document.getElementById('languages'); // Get languages container
+
+
+// Remove language boxes - no longer needed
+
+// Populate language dropdown options (if you keep the dropdown filter)
+if (languageSelect) { // Check if languageSelect exists in HTML
+    languageSelect.innerHTML = '<option value="">All Languages</option>'; // Default option
+    Object.entries(languages).forEach(([code, name]) => {
+        const option = document.createElement('option');
+        option.value = code; // Use language code as value
+        option.textContent = name; // Display language name
+        languageSelect.appendChild(option);
+    });
+}
 
 
 // localVideo.style.display = 'none';
@@ -89,7 +91,7 @@ if (!isLoggedIn())
     window.location.href = "/index.html";
 }
 
-function filterUsersByLanguage(languageCode) {
+function filterUsersByLanguage(languageCode) { // Keep this function for dropdown filter if you use it
     usersList.innerHTML = '';
     usersList.style.display = 'block';
 
@@ -97,6 +99,65 @@ function filterUsersByLanguage(languageCode) {
         return user.languages.includes(languageCode) && sid !== socket.id;
     });
 
+    displayUsers(filteredUsers);
+}
+
+function filterUsersBySpec(spec) {
+    usersList.innerHTML = '';
+    usersList.style.display = 'block';
+
+    const filteredUsers = Object.entries(allUsers).filter(([sid, user]) => {
+        return user.specs === spec && sid !== socket.id;
+    });
+
+    displayUsers(filteredUsers);
+}
+
+
+function searchUsers(searchTerm) {
+    usersList.innerHTML = '';
+    usersList.style.display = 'block';
+    searchTerm = searchTerm.toLowerCase().trim(); // Normalize search term
+
+    const filteredUsers = Object.entries(allUsers).filter(([sid, user]) => {
+        if (sid === socket.id) return false; // Exclude current user
+
+        for (const langCode of user.languages) {
+            const languageName = languages[langCode]?.toLowerCase(); // Get full language name, handle undefined case
+            if (languageName) {
+                if (languageName.includes(searchTerm) || langCode.toLowerCase().includes(searchTerm)) { // Check for match in full name OR code
+                    return true; // User speaks a language that matches the search term (name or code)
+                }
+            } else if (langCode.toLowerCase().includes(searchTerm)) {
+                // Handle case where language name is not found in `languages` but code matches (unlikely but robust)
+                return true;
+            }
+        }
+
+        if (user.id.toLowerCase().includes(searchTerm)) { // Search by User ID (still included)
+            return true;
+        }
+
+        return false; // No language or user ID match for this user
+    });
+
+    displayUsers(filteredUsers);
+}
+
+
+function filterUsersByLanguageDropdown() { // Keep this function if you use language dropdown
+    if (!languageSelect) return; // Exit if languageSelect is not in HTML
+    const selectedLanguageCode = languageSelect.value;
+    if (selectedLanguageCode) {
+        filterUsersByLanguage(selectedLanguageCode);
+    } else {
+        usersList.innerHTML = ''; // Clear list to show all users again when "All Languages" is selected.
+        displayUsers(Object.entries(allUsers).filter(([sid, user]) => sid !== socket.id)); // Redisplay all users
+    }
+}
+
+
+function displayUsers(filteredUsers) {
     if (filteredUsers.length === 0) {
         const noUsers = document.createElement('li');
         noUsers.textContent = 'No users available';
@@ -106,15 +167,38 @@ function filterUsersByLanguage(languageCode) {
 
     filteredUsers.forEach(([sid, user]) => {
         const listItem = document.createElement('li');
-        listItem.textContent = user.id;
-        if (!user.InCall) {
+        listItem.style.display = 'flex';
+        listItem.style.justifyContent = 'space-between';
+        listItem.style.alignItems = 'center';
+        listItem.style.padding = '15px'; // Increased padding to match list items
+        listItem.style.margin = '10px 0'; // Keep margin
+        listItem.style.borderRadius = '10px'; // Keep border-radius
+        listItem.style.background = 'rgba(255, 255, 255, 0.1)'; // Keep background
+        listItem.style.backdropFilter = 'blur(5px)'; // Keep backdrop-filter
+        listItem.style.animation = 'slideIn 0.4s ease-out forwards';
+        listItem.style.opacity = '0';
+        listItem.style.transform = 'translateX(-20px)';
+
+
+        const userIdSpan = document.createElement('span');
+        userIdSpan.textContent = user.id;
+
+        const userSpecs = document.createElement('span');
+        userSpecs.textContent = user.specs;
+        userSpecs.style.color = '#6fd4e5';
+
+        listItem.appendChild(userIdSpan);
+        listItem.appendChild(userSpecs);
+
+
+        if (!user.in_call) {
             const callButton = document.createElement('button');
             callButton.textContent = 'Call';
             callButton.onclick = () => initiateCall(sid);
             listItem.appendChild(callButton);
         }
         usersList.appendChild(listItem);
-        listItem.style.animation = 'slideIn 0.3s ease forwards';
+
 
     });
 }
@@ -127,18 +211,19 @@ function createEndCallButton() {
     endCallButton.textContent = 'End Call';
     endCallButton.style.display = 'none';
     endCallButton.style.position = 'fixed';
-    endCallButton.style.bottom = '20px';
+    endCallButton.style.bottom = '30px'; // Adjusted to match CSS
     endCallButton.style.left = '50%';
     endCallButton.style.transform = 'translateX(-50%)';
-    endCallButton.style.padding = '10px 20px';
-    endCallButton.style.backgroundColor = '#ff4444';
-    endCallButton.style.color = 'white';
-    endCallButton.style.border = 'none';
-    endCallButton.style.borderRadius = '5px';
-    endCallButton.style.cursor = 'pointer';
-
+    endCallButton.style.padding = '12px 35px'; // Adjusted to match CSS
     endCallButton.style.background = 'linear-gradient(45deg, #ff4444, #cc0000)';
+    endCallButton.style.border = 'none';
+    endCallButton.style.borderRadius = '30px'; // Adjusted to match CSS
+    endCallButton.style.color = 'white';
+    endCallButton.style.fontWeight = 'bold';
+    endCallButton.style.cursor = 'pointer';
     endCallButton.style.boxShadow = '0 8px 25px rgba(255, 68, 68, 0.3)';
+    endCallButton.style.transition = 'all 0.3s ease';
+    endCallButton.style.animation = 'pulse 1.5s infinite';
 
 
     endCallButton.onclick = endCall;
@@ -297,24 +382,28 @@ socket.on("connected", (users) => {
 
 socket.on('update_users', (users) => {
     allUsers = users;
+
+    // Populate spec dropdown
+    const specs = [...new Set(Object.values(users).map(user => user.specs))]; // Get unique specs
+    specSelect.innerHTML = '<option value="">All Specializations</option>'; // Reset options and add default
+    specs.forEach(spec => {
+        const option = document.createElement('option');
+        option.value = spec;
+        option.textContent = spec;
+        specSelect.appendChild(option);
+    });
+
+
     usersList.innerHTML = '';
-    for (let [sid, user] of Object.entries(users)) {
-        if (sid !== socket.id) {
-            const listItem = document.createElement('li');
-            listItem.textContent = user.id;
-            if (!user.InCall) {
-                const callButton = document.createElement('button');
-                callButton.textContent = 'Call';
-                callButton.onclick = () => initiateCall(sid);
-                listItem.appendChild(callButton);
-            }
-            usersList.appendChild(listItem);
-            listItem.style.animation = 'slideIn 0.3s ease forwards';
-        }
-    }
+    console.log(users);
+    const usersArray = Object.entries(users); // Convert users object to array for easier filtering
+
+    displayUsers(usersArray.filter(([sid, user]) => sid !== socket.id)); // Initial display of all users (except self)
 });
 
+
 socket.on('call_received', (data) => {
+    console.log("call reced PEER CONN: ".peerConnection)
     currentCallSid = data.sid;
     console.log(currentCallSid)
     const userResponse = confirm(`Accept call from ${data.from}?`);
@@ -328,6 +417,7 @@ socket.on('call_received', (data) => {
 });
 
 socket.on('offer', async ({ offer, from }) => {
+    console.log("OFFER PEER CONN: ".peerConnection)
     if (!peerConnection) peerConnection = createPeerConnection(from);
 
     try {
@@ -348,6 +438,7 @@ socket.on('offer', async ({ offer, from }) => {
 });
 
 socket.on('answer', async ({ answer }) => {
+    console.log(peerConnection)
     if (!peerConnection) return;
 
     try {
@@ -384,6 +475,30 @@ socket.on('call_rejected', () => {
     alert('Call was rejected');
     cleanupCall();
 });
+
+// Event listeners for filters and search
+specSelect.addEventListener('change', (event) => {
+    const selectedSpec = event.target.value;
+    if (selectedSpec) {
+        filterUsersBySpec(selectedSpec);
+    } else {
+        usersList.innerHTML = ''; // Clear list to show all users again when "All Specs" is selected.
+        displayUsers(Object.entries(allUsers).filter(([sid, user]) => sid !== socket.id)); // Redisplay all users
+    }
+});
+
+if (userSearchInput) { // Check if userSearchInput exists in HTML
+    userSearchInput.addEventListener('input', (event) => {
+        const searchTerm = event.target.value;
+        searchUsers(searchTerm);
+    });
+}
+
+
+if (languageSelect) { // Check if languageSelect exists in HTML
+    languageSelect.addEventListener('change', filterUsersByLanguageDropdown); // Event listener for language dropdown
+}
+
 
 // Initialization
 createEndCallButton();

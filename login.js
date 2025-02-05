@@ -1,5 +1,5 @@
-// const base_url = "http://localhost:5000/";
-const base_url = "https://voicenow.ddns.net:5000/";
+const base_url = "http://localhost:5000/";
+// const base_url = "https://voicenow.ddns.net:5000/";
 // Initialize language selection
 document.addEventListener('DOMContentLoaded', () => {
     createLanguageDropdown();
@@ -68,6 +68,7 @@ function createAccount() {
     const password = document.getElementById("create-password").value;
     const name = document.getElementById("create-name").value;
     const email = document.getElementById("create-email").value;
+    const specialization = document.getElementById("create-specialization").value;
     
     // Get selected languages
     const langSelects = document.querySelectorAll('.lang-select');
@@ -80,7 +81,8 @@ function createAccount() {
         password: password,
         name: name,
         email: email,
-        langs: selectedLangs
+        langs: selectedLangs,
+        specs: specialization  // Add specialization to the data object
     };
 
     // Rest of the fetch call remains the same
@@ -133,6 +135,12 @@ function createLanguageDropdown(selected = []) {
     
     container.appendChild(select);
 }
+
+// // Example usage (you might want to call this when the page loads)
+// document.addEventListener('DOMContentLoaded', () => {
+//     createLanguageDropdown();
+// });
+
 function animateElements() {
     const container = document.querySelector('.container');
     const formWrappers = document.querySelectorAll('.form-wrapper');
@@ -275,3 +283,39 @@ function animateElements(selector) {
         }
     }, 100);
 }
+
+
+const messengerId = "BotPenguin-messenger";
+const launcherId = "botpenguin-launcher-12";
+
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.type === "attributes" && mutation.attributeName === "style") {
+            const messenger = document.getElementById(messengerId);
+            const launcher = document.getElementById(launcherId);
+
+            if (messenger && launcher && messenger.style.display === "block") {
+                console.log("BotPenguin messenger detected. Hiding it...");
+
+                messenger.style.display = "none"; // Hide the messenger
+                launcher.style.display = "block"; // Show the launcher
+                observer.disconnect();
+
+            }
+        }
+    });
+});
+
+// Function to start observing once the elements are available
+function observeElement() {
+    const messenger = document.getElementById(messengerId);
+    if (messenger) {
+        observer.observe(messenger, { attributes: true, attributeFilter: ["style"] });
+        console.log("Observing BotPenguin messenger for visibility changes...");
+    } else {
+        setTimeout(observeElement, 500); // Retry if the element is not found yet
+    }
+}
+
+// Start checking for the element
+observeElement();
