@@ -43,6 +43,7 @@ const specSelect = document.getElementById('specSelect'); // Get spec dropdown
 const userSearchInput = document.getElementById('userSearchInput'); // Get search input
 const languageSelect = document.getElementById('languageSelect'); // Get language dropdown (keep if you want to keep language dropdown filter)
 const languagesContainer = document.getElementById('languages'); // Get languages container
+const callStatusDisplay = document.getElementById('callStatus'); // Get call status display
 
 
 // Remove language boxes - no longer needed
@@ -240,7 +241,7 @@ function displayUsers(filteredUsers) {
         if (!user.in_call) {
             const callButton = document.createElement('button');
             callButton.textContent = 'Call';
-            callButton.onclick = () => initiateCall(sid);
+            callButton.onclick = () => initiateCall(sid, user.id); // Pass username to initiateCall
             listItem.appendChild(callButton);
         }
         usersList.appendChild(listItem);
@@ -250,30 +251,38 @@ function displayUsers(filteredUsers) {
 }
 
 
-// Initialize the end call button
 function createEndCallButton() {
+    // Create button container if it doesn't exist
+    let buttonContainer = document.querySelector('.button-container');
+    if (!buttonContainer) {
+        buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        document.body.appendChild(buttonContainer);
+    }
+
     endCallButton = document.createElement('button');
     endCallButton.id = 'endCallButton';
-    endCallButton.textContent = 'End Call';
-    endCallButton.style.display = 'none';
-    endCallButton.style.position = 'fixed';
-    endCallButton.style.bottom = '30px'; // Adjusted to match CSS
-    endCallButton.style.left = '50%';
-    endCallButton.style.transform = 'translateX(-50%)';
-    endCallButton.style.padding = '12px 35px'; // Adjusted to match CSS
-    endCallButton.style.background = 'linear-gradient(45deg, #ff4444, #cc0000)';
-    endCallButton.style.border = 'none';
-    endCallButton.style.borderRadius = '30px'; // Adjusted to match CSS
-    endCallButton.style.color = 'white';
-    endCallButton.style.fontWeight = 'bold';
-    endCallButton.style.cursor = 'pointer';
-    endCallButton.style.boxShadow = '0 8px 25px rgba(255, 68, 68, 0.3)';
-    endCallButton.style.transition = 'all 0.3s ease';
-    endCallButton.style.animation = 'pulse 1.5s infinite';
-
-
+    endCallButton.innerHTML = `
+        <span class="button-icon">📞</span>
+        <span class="button-text">End Call</span>
+    `;
     endCallButton.onclick = endCall;
-    document.body.appendChild(endCallButton);
+
+
+    // Add to button container instead of body
+    buttonContainer.appendChild(endCallButton);
+
+    // Initialize toggle camera button if not in HTML
+    if (!document.getElementById('toggleCamera')) {
+        const toggleCameraButton = document.createElement('button');
+        toggleCameraButton.id = 'toggleCamera';
+        toggleCameraButton.innerHTML = `
+            <span class="button-icon">🎥</span>
+            <span class="button-text">Toggle Camera</span>
+        `;
+        buttonContainer.insertBefore(toggleCameraButton, endCallButton);
+    }
+
 }
 
 // Initialize camera selection and media devices
@@ -290,19 +299,46 @@ function initializeMediaDevices() {
             });
             if (videoDevices.length > 0) {
                 cameraSelect.style.display = 'block'
-                cameraSelect.addEventListener('change', () => {
-                    const selectedDeviceId = cameraSelect.value;
-                    navigator.mediaDevices.getUserMedia({
-                        video: { deviceId: selectedDeviceId },
-                        audio: true
-                    }).then((stream) => {
+                cameraSelect.addEventListener('change', async () => {
+                    try {
+                        const selectedDeviceId = cameraSelect.value;
+                        const constraints = {
+                            video: { deviceId: selectedDeviceId },
+                            audio: true
+                        };
+
+                        // Get new stream
+                        const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                        // Stop old tracks
                         if (localStream) {
                             localStream.getTracks().forEach(track => track.stop());
                         }
-                        localStream = stream;
-                        localVideo.srcObject = stream;
-                    }).catch(console.error);
+
+                        // Apply previous mute state to new stream
+                        if (!isCameraOn) {
+                            newStream.getVideoTracks()[0].enabled = false;
+                        }
+
+                        // Update local video and stream reference
+                        localStream = newStream;
+                        localVideo.srcObject = newStream;
+
+                        // Update peer connection
+                        if (peerConnection) {
+                            const videoTrack = localStream.getVideoTracks()[0];
+                            const senders = peerConnection.getSenders();
+                            const videoSender = senders.find(s => s.track?.kind === 'video');
+
+                            if (videoSender && videoTrack) {
+                                await videoSender.replaceTrack(videoTrack);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error switching camera:', error);
+                    }
                 });
+
 
                 cameraSelect.dispatchEvent(new Event('change'));
             }
@@ -326,6 +362,7 @@ function createPeerConnection(targetSid) {
             remoteVideo.srcObject = event.streams[0];
             remoteVideo.style.display = 'block';
             remoteVideo.style.animation = 'fadeIn 0.5s ease';
+            displayCallStatus(`On call with ${getTargetUsername(currentCallSid)}`); // Update status to "On call"
         }
     };
 
@@ -353,7 +390,7 @@ function createPeerConnection(targetSid) {
 }
 
 // Call Management
-function initiateCall(targetSid) {
+function initiateCall(targetSid, targetUsername) {
     if (peerConnection) {
         console.warn('A call is already in progress.');
         return;
@@ -366,8 +403,9 @@ function initiateCall(targetSid) {
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
-
     videoContainer.style.animation = 'fadeIn 0.5s ease';
+
+    displayCallStatus(`Calling ${targetUsername}`); // Display "Calling Username"
 }
 
 function acceptCall(targetSid) {
@@ -383,7 +421,6 @@ function acceptCall(targetSid) {
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
-
     videoContainer.style.animation = 'fadeIn 0.5s ease';
 }
 
@@ -413,8 +450,17 @@ function cleanupCall() {
     localVideo.style.display = 'none';
     endCallButton.style.display = 'none';
     videoContainer.classList.remove('active');
-
+    callStatusDisplay.textContent = ''; // Clear call status message
     currentCallSid = null;
+}
+
+// Helper function to get username from allUsers by SID
+function getTargetUsername(sid) {
+    return allUsers[sid]?.id || 'User'; // Default to 'User' if username not found
+}
+
+function displayCallStatus(message) {
+    callStatusDisplay.textContent = message;
 }
 
 
@@ -452,7 +498,9 @@ socket.on('call_received', (data) => {
     console.log("call reced PEER CONN: ".peerConnection)
     currentCallSid = data.sid;
     console.log(currentCallSid)
-    const userResponse = confirm(`Accept call from ${data.from}?`);
+    const callerUsername = getTargetUsername(currentCallSid); // Get caller username
+    displayCallStatus(`Incoming call from ${callerUsername}`); // Display "Incoming call from username"
+    const userResponse = confirm(`Accept call from ${callerUsername}?`);
     if (userResponse) {
         acceptCall(currentCallSid);
     } else {
@@ -489,6 +537,7 @@ socket.on('answer', async ({ answer }) => {
 
     try {
         await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        displayCallStatus(`On call with ${getTargetUsername(currentCallSid)}`); // Update status to "On call" after answer
     } catch (err) {
         console.error('Answer handling error:', err);
     }
@@ -549,6 +598,35 @@ if (languageSelect) { // Check if languageSelect exists in HTML
 // Initialization
 createEndCallButton();
 initializeMediaDevices();
+
+
+const toggleCameraButton = document.getElementById('toggleCamera');
+let isCameraOn = true;
+
+// Modified camera toggle handler
+toggleCameraButton.addEventListener('click', () => {
+    isCameraOn = !isCameraOn;
+
+    if (localStream) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = isCameraOn;
+        }
+    }
+    console.log(toggleCameraButton.style.background)
+    if (!isCameraOn)
+    {
+        toggleCameraButton.style.background="linear-gradient(45deg,rgb(192, 34, 34), #4553a1)"
+    }
+    else{
+        toggleCameraButton.style.background = "linear-gradient(45deg, #4a90e2, #5b6ee1)"
+    }
+    // #5964a2
+    //#4553a1
+});
+
+
+
 
 // Test backend connection
 fetch(api_url + '/test')

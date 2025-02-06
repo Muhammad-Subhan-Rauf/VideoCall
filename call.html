@@ -36,12 +36,17 @@
 
     <ul id="usersList"></ul>
 
+    <div id="callStatus" style="text-align: center; margin-bottom: 10px;"></div>
 
     <div id="videoContainer">
         <video id="remoteVideo" playsinline autoplay></video>
         <video id="localVideo" playsinline autoplay muted></video>
+        <!-- <button id="toggleCamera" style="position: fixed; bottom: 60px; left: 50%;">Toggle Camera</button> -->
     </div>
-
+    <div class="button-container">
+        <!-- <button id="toggleCamera">Toggle Camera</button>
+        <button id="endCallButton">End Call</button> -->
+    </div>
      <select id="cameraSelect" style="display:none;"></select>
 
     <script src="call.js"></script>
