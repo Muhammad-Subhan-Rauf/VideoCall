@@ -51,3 +51,14 @@ function observeElement() {
 // Start checking for the element
 observeElement();
 
+
+
+// call_style.js or call.js (you can add this to either file)
+document.addEventListener('DOMContentLoaded', () => {
+    const swapStreamsButton = document.getElementById('swapStreamsButton');
+    const videoContainer = document.getElementById('videoContainer');
+    swapStreamsButton.style.display = 'none'
+    swapStreamsButton.addEventListener('click', () => {
+        videoContainer.classList.toggle('swapped');
+    });
+});

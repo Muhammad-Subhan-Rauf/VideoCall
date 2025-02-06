@@ -40,7 +40,7 @@ h1 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: opacity 0.3s ease;
+    transition: all 0.5s ease; /* Transition added for smooth swap */
 }
 
 #localVideo {
@@ -52,7 +52,8 @@ h1 {
     border-radius: 8px;
     border: 3px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: all 0.5s ease; /* Transition added for smooth swap */
+    z-index: 1; /* Ensure local video is above remote when small */
 }
 
 #localVideo:hover {
@@ -324,9 +325,10 @@ label[for="specSelect"] {
     z-index: 1000;
 }
 
-/* Base button styles - COMMON STYLES FOR BOTH BUTTONS */
+/* Base button styles - COMMON STYLES FOR ALL BUTTONS in button-container */
 #endCallButton,
-#toggleCamera {
+#toggleCamera,
+#swapStreamsButton {
     /* padding: 15px 35px; /* REMOVED - padding adjusted for circle size */
     /* border-radius: 30px; /* REMOVED -  individual border-radius: 50% for circles */
     border: 2px solid rgba(255, 255, 255, 0.15);
@@ -341,6 +343,12 @@ label[for="specSelect"] {
     backdrop-filter: blur(5px);
     flex-direction: column; /* Stack icon and text */
     padding: 10px; /* Adjusted padding for circle buttons */
+    font-size: 1.2em; /* Ensure font size is set here for the new button as well */
+    border-radius: 50%; /* Make buttons circular */
+    width: 80px;      /* Fixed width for circle */
+    height: 80px;     /* Fixed height for circle */
+    justify-content: center; /* Center content vertically */
+    align-items: center;     /* Center content horizontally */
 }
 
 /* End Call Button specific styles - KEPT SPECIFIC STYLES DISTINCT */
@@ -358,7 +366,8 @@ label[for="specSelect"] {
 
 /* Hover effects - COMMON HOVER EFFECT - can be shared if hover effect is the same */
 #endCallButton:hover,
-#toggleCamera:hover {
+#toggleCamera:hover,
+#swapStreamsButton:hover {
     transform: scale(1.05);
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
     filter: brightness(1.1);
@@ -366,7 +375,8 @@ label[for="specSelect"] {
 
 /* Active state - COMMON ACTIVE STATE - can be shared if active effect is the same */
 #endCallButton:active,
-#toggleCamera:active {
+#toggleCamera:active,
+#swapStreamsButton:active {
     transform: scale(0.95);
 }
 
@@ -387,7 +397,8 @@ label[for="specSelect"] {
     }
 
     #endCallButton,
-    #toggleCamera {
+    #toggleCamera,
+    #swapStreamsButton {
         width: 60px; /* Adjusted width for smaller circles in mobile */
         height: 60px; /* Adjusted height for smaller circles in mobile */
         /* justify-content: center; /* REMOVED - already centered by flex display */
@@ -418,7 +429,8 @@ label[for="specSelect"] {
 }
 
 #endCallButton:hover .button-icon,
-#toggleCamera:hover .button-icon {
+#toggleCamera:hover .button-icon,
+#swapStreamsButton:hover .button-icon {
     transform: scale(1.2);
 }
 
@@ -429,4 +441,60 @@ label[for="specSelect"] {
     .button-text {
         display: none; /* Hide text in mobile view if desired */
     }
+}
+
+/* --- New styles for swap streams button and video swapping --- */
+#swapStreamsButton {
+    background: linear-gradient(45deg, #64b5f6, #1e88e5); /* Example color, adjust if needed */
+    box-shadow: 0 8px 25px rgba(100, 181, 246, 0.3);
+    position: relative; /* For icon positioning */
+}
+
+/* Icon for swap button (using CSS, no emojis) */
+#swapStreamsButton::before,
+#swapStreamsButton::after {
+    content: '';
+    position: absolute;
+    width: 14px; /* Slightly reduced size for circular button */
+    height: 14px; /* Slightly reduced size for circular button */
+    border: 2px solid white;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+#swapStreamsButton::before {
+    top: 18px; /* Adjusted position for circular button */
+    left: 18px; /* Adjusted position for circular button */
+    border-bottom: none;
+    border-right: none;
+    transform: rotate(-45deg);
+}
+
+#swapStreamsButton::after {
+    bottom: 18px; /* Adjusted position for circular button */
+    right: 18px; /* Adjusted position for circular button */
+    border-top: none;
+    border-left: none;
+    transform: rotate(-45deg);
+}
+
+
+/* Swapped video styles - applied when 'swapped' class is added to videoContainer */
+#videoContainer.swapped #remoteVideo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 180px;
+    height: 120px;
+    border-radius: 8px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1; /* To ensure it's on top of the local video */
+}
+
+#videoContainer.swapped #localVideo {
+    position: static; /* Revert to static positioning to fill container */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }

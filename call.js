@@ -44,7 +44,7 @@ const userSearchInput = document.getElementById('userSearchInput'); // Get searc
 const languageSelect = document.getElementById('languageSelect'); // Get language dropdown (keep if you want to keep language dropdown filter)
 const languagesContainer = document.getElementById('languages'); // Get languages container
 const callStatusDisplay = document.getElementById('callStatus'); // Get call status display
-
+const swapStreamsButton = document.getElementById('swapStreamsButton');
 
 // Remove language boxes - no longer needed
 
@@ -262,6 +262,7 @@ function createEndCallButton() {
 
     endCallButton = document.createElement('button');
     endCallButton.id = 'endCallButton';
+    endCallButton.style.display = "none"
     endCallButton.innerHTML = `
         <span class="button-icon">📞</span>
         <span class="button-text">End Call</span>
@@ -275,6 +276,7 @@ function createEndCallButton() {
     // Initialize toggle camera button if not in HTML
     if (!document.getElementById('toggleCamera')) {
         const toggleCameraButton = document.createElement('button');
+        toggleCameraButton.style.display="none"
         toggleCameraButton.id = 'toggleCamera';
         toggleCameraButton.innerHTML = `
             <span class="button-icon">🎥</span>
@@ -399,7 +401,9 @@ function initiateCall(targetSid, targetUsername) {
     currentCallSid = targetSid;
     peerConnection = createPeerConnection(targetSid);
     socket.emit('call_request', { to: targetSid });
-    endCallButton.style.display = 'block';
+    endCallButton.style.display = 'flex';
+    toggleCameraButton.style.display = 'flex'
+    swapStreamsButton.style.display = 'flex'
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
@@ -417,7 +421,9 @@ function acceptCall(targetSid) {
     currentCallSid = targetSid;
     peerConnection = createPeerConnection(targetSid);
     socket.emit('accept_call', { to: targetSid });
-    endCallButton.style.display = 'block';
+    endCallButton.style.display = 'flex';
+    toggleCameraButton.style.display='flex'
+    swapStreamsButton.style.display = 'flex'
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
@@ -449,6 +455,7 @@ function cleanupCall() {
     }
     localVideo.style.display = 'none';
     endCallButton.style.display = 'none';
+    swapStreamsButton.style.display = 'none'
     videoContainer.classList.remove('active');
     callStatusDisplay.textContent = ''; // Clear call status message
     currentCallSid = null;
