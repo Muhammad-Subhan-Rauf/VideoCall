@@ -1,3 +1,7 @@
+/* call_style.css */
+/* Existing styles from your provided CSS (style.css) should be here as well for this to work standalone */
+
+/* Import existing styles from style.css -  Copy all styles from style.css here */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -328,7 +332,9 @@ label[for="specSelect"] {
 /* Base button styles - COMMON STYLES FOR ALL BUTTONS in button-container */
 #endCallButton,
 #toggleCamera,
-#swapStreamsButton {
+#swapStreamsButton,
+#fullScreenButton,
+#toggleMic { /* ADDED #toggleMic to common styles */
     /* padding: 15px 35px; /* REMOVED - padding adjusted for circle size */
     /* border-radius: 30px; /* REMOVED -  individual border-radius: 50% for circles */
     border: 2px solid rgba(255, 255, 255, 0.15);
@@ -364,10 +370,18 @@ label[for="specSelect"] {
     /* box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3); /* KEPT */
 /* } */ /* NO NEED TO REDEFINE SELECTOR*/
 
+/* Toggle Mic Button specific styles */
+#toggleMic {
+    background: linear-gradient(45deg, #7cb342, #558b2f); /* Green color for mic button */
+    box-shadow: 0 8px 25px rgba(124, 179, 66, 0.3); /* Green shadow */
+}
+
 /* Hover effects - COMMON HOVER EFFECT - can be shared if hover effect is the same */
 #endCallButton:hover,
 #toggleCamera:hover,
-#swapStreamsButton:hover {
+#swapStreamsButton:hover,
+#fullScreenButton:hover,
+#toggleMic:hover { /* ADDED #toggleMic to hover effects */
     transform: scale(1.05);
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
     filter: brightness(1.1);
@@ -376,7 +390,9 @@ label[for="specSelect"] {
 /* Active state - COMMON ACTIVE STATE - can be shared if active effect is the same */
 #endCallButton:active,
 #toggleCamera:active,
-#swapStreamsButton:active {
+#swapStreamsButton:active,
+#fullScreenButton:active,
+#toggleMic:active { /* ADDED #toggleMic to active state */
     transform: scale(0.95);
 }
 
@@ -398,7 +414,9 @@ label[for="specSelect"] {
 
     #endCallButton,
     #toggleCamera,
-    #swapStreamsButton {
+    #swapStreamsButton,
+    #fullScreenButton,
+    #toggleMic { /* ADDED #toggleMic to mobile styles */
         width: 60px; /* Adjusted width for smaller circles in mobile */
         height: 60px; /* Adjusted height for smaller circles in mobile */
         /* justify-content: center; /* REMOVED - already centered by flex display */
@@ -430,7 +448,9 @@ label[for="specSelect"] {
 
 #endCallButton:hover .button-icon,
 #toggleCamera:hover .button-icon,
-#swapStreamsButton:hover .button-icon {
+#swapStreamsButton:hover .button-icon,
+#fullScreenButton:hover .button-icon,
+#toggleMic:hover .button-icon { /* ADDED #toggleMic to icon hover */
     transform: scale(1.2);
 }
 
@@ -494,6 +514,118 @@ label[for="specSelect"] {
 
 #videoContainer.swapped #localVideo {
     position: static; /* Revert to static positioning to fill container */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- New styles for full screen button and full screen mode --- */
+#fullScreenButton {
+    background: linear-gradient(45deg, #ff9800, #f57c00); /* Example color, adjust if needed - Orange tone */
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+    position: relative; /* For icon positioning */
+}
+
+#fullScreenButton::before {
+    font-family: 'Font Awesome 6 Free'; /* Use Font Awesome for icons */
+    font-weight: 900; /* Solid style */
+    content: '\f0b2'; /* Full screen icon code - Font Awesome */
+    color: white;
+    font-size: 1.5em; /* Adjust icon size */
+}
+
+#fullScreenButton.fullscreen-exit::before {
+    content: '\f0b2'; /* Minimize screen icon code - You might need a different icon for exit or reuse fullscreen icon */
+    transform: rotate(180deg); /* Visually represent exiting full screen by rotating the icon */
+}
+
+
+/* Full screen video styles - applied when 'fullscreen' class is added to videoContainer */
+#videoContainer.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw; /* Use vw for viewport width */
+    height: 100vh; /* Use vh for viewport height */
+    max-width: none; /* Remove max-width in full screen */
+    z-index: 1000; /* Ensure it's on top of everything */
+    border-radius: 0; /* Remove border-radius in full screen if desired */
+}
+
+#videoContainer.fullscreen #remoteVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Or contain, depending on desired effect */
+}
+
+#videoContainer.fullscreen #localVideo {
+    position: absolute; /* Keep position absolute in full screen */
+    bottom: 30px;      /* Adjust bottom spacing in full screen */
+    right: 30px;       /* Adjust right spacing in full screen */
+    width: 240px;      /* Scale up local video size in full screen */
+    height: 160px;     /* Scale up local video size in full screen */
+    border-radius: 10px; /* Adjust border-radius if needed */
+    border-width: 4px;  /* Adjust border width if needed */
+}
+
+/* Add transition for smooth full screen toggle */
+#videoContainer,
+#videoContainer.fullscreen #remoteVideo,
+#videoContainer.fullscreen #localVideo,
+#remoteVideo,
+#localVideo {
+    transition: all 0.5s ease; /* Ensure transition is smooth for all relevant properties */
+}
+
+/* Mobile responsiveness for fullscreen mode */
+@media (max-width: 768px) {
+    #videoContainer.fullscreen #localVideo {
+        width: 180px;      /* Adjust local video size for mobile fullscreen */
+        height: 120px;     /* Adjust local video size for mobile fullscreen */
+        bottom: 20px;      /* Adjust bottom spacing in mobile fullscreen */
+        right: 20px;       /* Adjust right spacing in mobile fullscreen */
+    }
+}
+
+/* call_style.css */
+/* ... your existing CSS ... */
+
+/* Swapped video styles - applied when 'swapped' class is added to videoContainer */
+#videoContainer.swapped #remoteVideo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 180px;
+    height: 120px;
+    border-radius: 8px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1; /* To ensure it's on top of the local video */
+}
+
+#videoContainer.swapped #localVideo {
+    position: static; /* Revert to static positioning to fill container */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* #76B13F */
+/* --- Modified Swapped styles for Fullscreen --- */
+/* Apply these styles when videoContainer has BOTH 'fullscreen' and 'swapped' classes */
+#videoContainer.fullscreen.swapped #remoteVideo {
+    position: absolute; /* Keep absolute in fullscreen swapped for small view */
+    bottom: 30px; /* Adjust bottom position in fullscreen */
+    right: 30px;  /* Adjust right position in fullscreen */
+    width: 240px; /* Adjust width in fullscreen */
+    height: 160px; /* Adjust height in fullscreen */
+    border-radius: 10px; /* Adjust border-radius in fullscreen */
+    border-width: 4px; /* Make border a bit thicker in fullscreen */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Adjust shadow in fullscreen */
+    z-index: 2; /* Make sure it's above the local video */
+}
+
+#videoContainer.fullscreen.swapped #localVideo {
+    position: static; /* Make local video fullscreen when swapped and in fullscreen */
     width: 100%;
     height: 100%;
     object-fit: cover;

@@ -45,6 +45,7 @@ const languageSelect = document.getElementById('languageSelect'); // Get languag
 const languagesContainer = document.getElementById('languages'); // Get languages container
 const callStatusDisplay = document.getElementById('callStatus'); // Get call status display
 const swapStreamsButton = document.getElementById('swapStreamsButton');
+const fullScreenButton = document.getElementById('fullScreenButton');
 
 // Remove language boxes - no longer needed
 
@@ -285,69 +286,91 @@ function createEndCallButton() {
         buttonContainer.insertBefore(toggleCameraButton, endCallButton);
     }
 
+    // Initialize toggle microphone button  <-- Add this section -->
+    if (!document.getElementById('toggleMic')) {
+        const toggleMicButton = document.createElement('button');
+        toggleMicButton.style.display="none"
+        toggleMicButton.id = 'toggleMic';
+        toggleMicButton.innerHTML = `
+            <span class="button-icon">🎤</span>
+            <span class="button-text">Mute Mic</span>
+        `;
+        buttonContainer.insertBefore(toggleMicButton, toggleCameraButton); // Place it before or after toggleCamera as you like
+    }
 }
 
 // Initialize camera selection and media devices
-function initializeMediaDevices() {
-    navigator.mediaDevices.enumerateDevices()
-        .then((devices) => {
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+async function initializeMediaDevices() {
+    try {
+        // Request camera access to ensure device labels are available
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        // Enumerate devices after permission is granted
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-            videoDevices.forEach((device, index) => {
-                const option = document.createElement('option');
-                option.value = device.deviceId;
-                option.textContent = device.label || `Camera ${index + 1}`;
-                cameraSelect.appendChild(option);
-            });
-            if (videoDevices.length > 0) {
-                cameraSelect.style.display = 'block'
-                cameraSelect.addEventListener('change', async () => {
-                    try {
-                        const selectedDeviceId = cameraSelect.value;
-                        const constraints = {
-                            video: { deviceId: selectedDeviceId },
-                            audio: true
-                        };
+        // Clear previous options
+        cameraSelect.innerHTML = '';
 
-                        // Get new stream
-                        const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+        videoDevices.forEach((device, index) => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.textContent = device.label || `Camera ${index + 1}`;
+            cameraSelect.appendChild(option);
+        });
 
-                        // Stop old tracks
-                        if (localStream) {
-                            localStream.getTracks().forEach(track => track.stop());
-                        }
+        if (videoDevices.length > 0) {
+            cameraSelect.style.display = 'block';
+            cameraSelect.addEventListener('change', async () => {
+                try {
+                    const selectedDeviceId = cameraSelect.value;
+                    const constraints = {
+                        video: { deviceId: selectedDeviceId },
+                        audio: true
+                    };
 
-                        // Apply previous mute state to new stream
-                        if (!isCameraOn) {
-                            newStream.getVideoTracks()[0].enabled = false;
-                        }
+                    // Get new stream
+                    const newStream = await navigator.mediaDevices.getUserMedia(constraints);
 
-                        // Update local video and stream reference
-                        localStream = newStream;
-                        localVideo.srcObject = newStream;
-
-                        // Update peer connection
-                        if (peerConnection) {
-                            const videoTrack = localStream.getVideoTracks()[0];
-                            const senders = peerConnection.getSenders();
-                            const videoSender = senders.find(s => s.track?.kind === 'video');
-
-                            if (videoSender && videoTrack) {
-                                await videoSender.replaceTrack(videoTrack);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error switching camera:', error);
+                    // Stop old tracks
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
                     }
-                });
 
+                    // Apply previous mute state to new stream
+                    if (!isCameraOn) {
+                        newStream.getVideoTracks()[0].enabled = false;
+                    }
 
-                cameraSelect.dispatchEvent(new Event('change'));
-            }
+                    // Update local video and stream reference
+                    localStream = newStream;
+                    localVideo.srcObject = newStream;
 
-        })
-        .catch(console.error);
+                    // Update peer connection
+                    if (peerConnection) {
+                        const videoTrack = localStream.getVideoTracks()[0];
+                        const senders = peerConnection.getSenders();
+                        const videoSender = senders.find(s => s.track?.kind === 'video');
+
+                        if (videoSender && videoTrack) {
+                            await videoSender.replaceTrack(videoTrack);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error switching camera:', error);
+                }
+            });
+
+            cameraSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Stop stream after enumeration if not needed
+        stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+    }
 }
+
 
 // WebRTC Peer Connection Management
 function createPeerConnection(targetSid) {
@@ -404,6 +427,8 @@ function initiateCall(targetSid, targetUsername) {
     endCallButton.style.display = 'flex';
     toggleCameraButton.style.display = 'flex'
     swapStreamsButton.style.display = 'flex'
+    fullScreenButton.style.display = 'flex'
+    toggleMicButton.style.display = 'flex';
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
@@ -424,6 +449,9 @@ function acceptCall(targetSid) {
     endCallButton.style.display = 'flex';
     toggleCameraButton.style.display='flex'
     swapStreamsButton.style.display = 'flex'
+    fullScreenButton.style.display = 'flex'
+    toggleMicButton.style.display = 'flex';
+
     localVideo.style.display = 'block';
     localVideo.style.animation = 'fadeIn 0.5s ease';
     videoContainer.classList.add('active');
@@ -456,6 +484,9 @@ function cleanupCall() {
     localVideo.style.display = 'none';
     endCallButton.style.display = 'none';
     swapStreamsButton.style.display = 'none'
+    fullScreenButton.style.display = 'none'
+    toggleMicButton.style.display = 'none';
+
     videoContainer.classList.remove('active');
     callStatusDisplay.textContent = ''; // Clear call status message
     currentCallSid = null;
@@ -632,6 +663,30 @@ toggleCameraButton.addEventListener('click', () => {
     //#4553a1
 });
 
+
+
+
+const toggleMicButton = document.getElementById('toggleMic'); // Get the mute mic button
+let isMicOn = true; // Keep track of mic state
+
+toggleMicButton.addEventListener('click', () => {
+    isMicOn = !isMicOn;
+
+    if (localStream) {
+        const audioTrack = localStream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = isMicOn; // Enable/disable the audio track
+        }
+    }
+
+    if (!isMicOn) {
+        toggleMicButton.style.background = "linear-gradient(45deg, #558b2f,rgb(192, 34, 34))"; // Indicate muted state
+        toggleMicButton.innerHTML = `<span class="button-icon">🔇</span><span class="button-text">Unmute Mic</span>`; // Change button text
+    } else {
+        toggleMicButton.style.background = "linear-gradient(45deg, #7cb342, #558b2f)"; // Indicate unmuted state
+        toggleMicButton.innerHTML = `<span class="button-icon">🎤</span><span class="button-text">Mute Mic</span>`; // Change button text back
+    }
+});
 
 
 

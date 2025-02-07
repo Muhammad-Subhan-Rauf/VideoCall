@@ -7,6 +7,7 @@
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="call_style.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <h1>TransLy </h1>
@@ -47,6 +48,10 @@
         <!-- <button id="toggleCamera">Toggle Camera</button>
         <button id="endCallButton">End Call</button> -->
         <button id="swapStreamsButton"></button> <!-- NEW BUTTON ADDED HERE -->
+        <button id="fullScreenButton" style="display: none;"></button> <!-- Full Screen Button -->
+        <button id="toggleMic" style="display:none">
+            <span class="button-icon">🎤</span><span class="button-text">Mute Mic</span>
+        </button>
     </div>
      <select id="cameraSelect" style="display:none;"></select>
 
